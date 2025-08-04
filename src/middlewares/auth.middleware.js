@@ -1,12 +1,13 @@
+import process from 'node:process';
 import ServerError from '../errors/server.error.js';
 import jwtService from '../services/jwt.service.js';
 
-function authMiddleware(request, response, next) {
+async function authMiddleware(request, response, next) {
 	if (request.headers.authorization) {
 		const [bearerToken, token] = request.headers.authorization.split(' ');
 		if (bearerToken === 'Bearer') {
+			const decoded = await jwtService.verifyToken(token, process.env.ACCESS_TOKEN_SECRET);
 			try {
-				const decoded = jwtService.verifyAccessToken(token);
 				if (
 					decoded.type !== jwtService.TokenType.ACCESS_TOKEN
 				) {

@@ -29,9 +29,18 @@ async function login(request, response, next) {
 	}
 }
 
-function refreshToken(request, response, next) {
+async function logout(request, response, next) {
 	try {
-		const {accessToken} = authService.refreshToken(request.headers.cookie);
+		await authService.logout(request.headers.authorization, request.headers.cookie);
+		return response.status(200).json({message: 'Logged out successfully!'});
+	} catch (error) {
+		next(error);
+	}
+}
+
+async function refreshToken(request, response, next) {
+	try {
+		const {accessToken} = await authService.refreshToken(request.headers.cookie);
 		return response.status(200).json({accessToken});
 	} catch (error) {
 		next(error);
@@ -41,6 +50,7 @@ function refreshToken(request, response, next) {
 const authController = {
 	register,
 	login,
+	logout,
 	refreshToken,
 };
 

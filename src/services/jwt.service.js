@@ -1,6 +1,7 @@
 import process from 'node:process';
 import jwt from 'jsonwebtoken';
 import ServerError from '../errors/server.error.js';
+import redisService from './redis.service.js';
 
 const TokenType = Object.freeze({
 	ACCESS_TOKEN: 'ACCESS_TOKEN',
@@ -8,75 +9,73 @@ const TokenType = Object.freeze({
 });
 
 function generateTokens(email, firstName, lastName) {
-	const accessToken = generateAccessToken(email, firstName, lastName);
-	const refreshToken = generateRefreshToken(email, firstName, lastName);
+	const accessToken = generateToken({
+		email,
+		firstName,
+		lastName,
+		type: TokenType.ACCESS_TOKEN,
+		secret: process.env.ACCESS_TOKEN_SECRET,
+		xpiration: process.env.ACCESS_TOKEN_EXPIRATION,
+	});
+	const refreshToken = generateToken({
+		email,
+		firstName,
+		lastName, type: TokenType.REFRESH_TOKEN,
+		secret: process.env.REFRESH_TOKEN_SECRET,
+		expiration: process.env.REFRESH_TOKEN_EXPIRATION,
+	});
 	return {accessToken, refreshToken};
 }
 
-function generateAccessToken(email, firstName, lastName) {
+function generateToken({email, firstName, lastName, type, secret, expiration}) {
 	return jwt.sign(
 		{
 			firstName,
 			lastName,
 			email,
-			type: TokenType.ACCESS_TOKEN,
+			type,
 		},
-		process.env.ACCESS_TOKEN_SECRET,
+		secret,
 		{
 			subject: email,
-			expiresIn: process.env.ACCESS_TOKEN_EXPIRATION,
+			expiresIn: expiration,
 		},
 	);
 }
 
-function generateRefreshToken(email, firstName, lastName) {
-	return jwt.sign(
-		{
-			firstName,
-			lastName,
-			email,
-			type: TokenType.REFRESH_TOKEN,
-		},
-		process.env.REFRESH_TOKEN_SECRET,
-		{
-			subject: email,
-			expiresIn: process.env.REFRESH_TOKEN_EXPIRATION,
-		},
-	);
-}
-
-function verifyAccessToken(token) {
-	return jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
+async function verifyToken(token, secret) {
+	const decoded = jwt.verify(token, secret, (error, decoded) => {
 		if (error) {
-			throw new ServerError(401, 'Invalid access token');
+			throw new ServerError(401, 'Invalid token');
 		}
 
 		return decoded;
 	});
+
+	const isBlacklisted = await redisService.isTokenInBlacklist(token);
+	if (isBlacklisted) {
+		throw new ServerError(401, 'Token is in blacklist');
+	}
+
+	return decoded;
 }
 
-function verifyRefreshToken(token) {
-	return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (error, decoded) => {
-		if (error) {
-			throw new ServerError(401, 'Invalid refresh token');
-		}
-
-		return decoded;
+async function refreshAccessToken(token) {
+	const decoded = await verifyToken(token, process.env.REFRESH_TOKEN_SECRET);
+	return generateToken({
+		email: decoded.email,
+		firstName: decoded.first_name,
+		lastName: decoded.last_name,
+		type: TokenType.ACCESS_TOKEN,
+		secret: process.env.ACCESS_TOKEN_SECRET,
+		expiration: process.env.ACCESS_TOKEN_EXPIRATION,
 	});
-}
-
-function refreshAccessToken(token) {
-	const decoded = verifyRefreshToken(token);
-	return generateAccessToken(decoded.email, decoded.first_name, decoded.last_name);
 }
 
 const jwtService = {
 	TokenType,
 	generateTokens,
-	generateAccessToken,
-	generateRefreshToken,
-	verifyAccessToken,
-	verifyRefreshToken,
+	verifyToken,
 	refreshAccessToken,
 };
 
