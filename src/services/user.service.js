@@ -1,27 +1,29 @@
-const User = require('../models/user')
+import User from '../models/user.js';
 
 async function createUser(firstName, lastName, email, password) {
-  const newUser = await User.create({
-    firstName,
-    lastName,
-    email,
-    password
-  })
-  return newUser
+	const newUser = await User.create({
+		firstName,
+		lastName,
+		email,
+		password,
+	});
+	return newUser;
 }
 
 async function getUserByEmail(email) {
-  const user = await User.findOne({ where: { email } })
-  return user
+	const user = await User.findOne({where: {email}});
+	return user;
 }
 
 async function getUserById(id) {
-  const user = await User.findByPk(id)
-  return user
+	const user = await User.findByPk(id);
+	return user;
 }
 
-module.exports = {
-  createUser,
-  getUserByEmail,
-  getUserById
-}
+const userService = {
+	createUser,
+	getUserByEmail,
+	getUserById,
+};
+
+export default userService;

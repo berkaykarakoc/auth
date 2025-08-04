@@ -1,36 +1,41 @@
-const argon2 = require('argon2')
-const { getUserByEmail, createUser } = require('./user.service')
-const { generateTokens, refreshAccessToken } = require('./jwt.service')
-const ServerError = require('../errors/server.error')
+import {hash, verify} from 'argon2';
+import ServerError from '../errors/server.error.js';
+import userService from './user.service.js';
+import jwtService from './jwt.service.js';
 
-async function register({ firstName, lastName, email, password }) {
-    const user = await getUserByEmail(email)
-    if (user) {
-        throw new ServerError(400, 'User already exists!')
-    }
-    const hashedPassword = await argon2.hash(password)
-    const newUser = await createUser(firstName, lastName, email, hashedPassword)
-    return { firstName: newUser.get('firstName'), lastName: newUser.get('lastName'), email: newUser.get('email') }
+async function register({firstName, lastName, email, password}) {
+	const user = await userService.getUserByEmail(email);
+	if (user) {
+		throw new ServerError(400, 'User already exists!');
+	}
+
+	const hashedPassword = await hash(password);
+	const newUser = await userService.createUser(firstName, lastName, email, hashedPassword);
+	return {firstName: newUser.get('firstName'), lastName: newUser.get('lastName'), email: newUser.get('email')};
 }
 
-async function login({ email, password }) {
-    const user = await getUserByEmail(email)
-    if (!user || !await argon2.verify(user.get('password'), password)) {
-        throw new ServerError(401, 'Invalid credentials!')
-    }
-    return generateTokens(email, user.get('firstName'), user.get('lastName'));
+async function login({email, password}) {
+	const user = await userService.getUserByEmail(email);
+	if (!user || !await verify(user.get('password'), password)) {
+		throw new ServerError(401, 'Invalid credentials!');
+	}
+
+	return jwtService.generateTokens(email, user.get('firstName'), user.get('lastName'));
 }
 
 function refreshToken(cookie) {
-    const refreshToken = cookie.split('refreshToken=')[1]
-    if (!refreshToken) {
-        throw new ServerError(400, 'No refresh token provided')
-    }
-    return { accessToken: refreshAccessToken(refreshToken) }
+	const refreshToken = cookie.split('refreshToken=')[1];
+	if (!refreshToken) {
+		throw new ServerError(400, 'No refresh token provided');
+	}
+
+	return {accessToken: jwtService.refreshAccessToken(refreshToken)};
 }
 
-module.exports = {
-    register,
-    login,
-    refreshToken
-}
+const authService = {
+	register,
+	login,
+	refreshToken,
+};
+
+export default authService;

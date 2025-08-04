@@ -1,28 +1,29 @@
-const ServerError = require('../errors/server.error');
-const { verifyAccessToken, TokenType } = require('../services/jwt.service');
+import ServerError from '../errors/server.error.js';
+import jwtService from '../services/jwt.service.js';
 
-function authMiddleware(req, res, next) {
-  if (req.headers.authorization) {
-    const [bearerToken, token] = req.headers.authorization.split(" ");
-    if (bearerToken === "Bearer") {
-      try {
-        const decoded = verifyAccessToken(token);
-        if (
-          decoded.type !== TokenType.ACCESS_TOKEN
-        ) {
-          next(new ServerError(401, "Invalid token type"));
-        }
-        req.email = decoded.sub;
-        return next();
-      } catch (err) {
-        next(new ServerError(401, "Invalid access token"));
-      }
-    }
-    next(new ServerError(401, "Invalid bearer token"));
-  }
-  next(new ServerError(400, "Authorization header is not present"));
-};
+function authMiddleware(request, response, next) {
+	if (request.headers.authorization) {
+		const [bearerToken, token] = request.headers.authorization.split(' ');
+		if (bearerToken === 'Bearer') {
+			try {
+				const decoded = jwtService.verifyAccessToken(token);
+				if (
+					decoded.type !== jwtService.TokenType.ACCESS_TOKEN
+				) {
+					return next(new ServerError(401, 'Invalid token type'));
+				}
 
-module.exports = {
-  authMiddleware
-};
+				request.email = decoded.sub;
+				return next();
+			} catch {
+				return next(new ServerError(401, 'Invalid access token'));
+			}
+		}
+
+		return next(new ServerError(401, 'Invalid bearer token'));
+	}
+
+	return next(new ServerError(400, 'Authorization header is not present'));
+}
+
+export default authMiddleware;

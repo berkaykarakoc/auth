@@ -1,10 +1,8 @@
-function errorMiddleware(err, req, res, next) {
-    const { code, message } = err;
-    res.status(code || 500).send({
-        error: message,
-    });
-};
+function errorMiddleware(error, request, response, _next) {
+	const {code, message} = error;
+	response.status(code || 500).json({
+		error: message,
+	});
+}
 
-module.exports = {
-    errorMiddleware
-};
+export default errorMiddleware;
