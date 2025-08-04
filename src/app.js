@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const helmet = require('helmet')
+const morgan = require('morgan')
 const authRoutes = require('./routes/auth.route')
 const meRoutes = require('./routes/me.route')
 const { errorMiddleware } = require('./middlewares/error.middleware')
@@ -17,6 +18,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }))
 app.use(helmet())
+app.use(morgan('combined'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 
