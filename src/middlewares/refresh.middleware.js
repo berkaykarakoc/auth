@@ -1,6 +1,7 @@
 import process from 'node:process';
 import ServerError from '../errors/server.error.js';
 import jwtService from '../services/jwt.service.js';
+import {TokenType} from '../models/enum.js';
 
 async function refreshMiddleware(request, response, next) {
 	if (request.headers?.cookie?.includes('refreshToken')) {
@@ -8,7 +9,7 @@ async function refreshMiddleware(request, response, next) {
 		const decoded = await jwtService.verifyToken(token, process.env.REFRESH_TOKEN_SECRET);
 		try {
 			if (
-				decoded.type !== jwtService.TokenType.REFRESH_TOKEN
+				decoded.type !== TokenType.REFRESH_TOKEN
 			) {
 				return next(new ServerError(401, 'Invalid token type'));
 			}

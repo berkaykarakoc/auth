@@ -1,5 +1,5 @@
 import {DataTypes, Model} from 'sequelize';
-import sequelize from '../config/database.js';
+import sequelize from '../connections/database.js';
 
 class User extends Model {}
 
@@ -35,6 +35,12 @@ User.init(
 				is: /^\$argon2(id|i|d)\$[a-zA-Z\d$=,.+/]+$/,
 			},
 			allowNull: false,
+		},
+		isVerified: {
+			type: DataTypes.BOOLEAN,
+			defaultValue: false,
+			allowNull: false,
+			field: 'is_verified',
 		},
 	},
 	{

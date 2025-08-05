@@ -1,12 +1,8 @@
 import process from 'node:process';
 import jwt from 'jsonwebtoken';
 import ServerError from '../errors/server.error.js';
+import {TokenType} from '../models/enum.js';
 import redisService from './redis.service.js';
-
-const TokenType = Object.freeze({
-	ACCESS_TOKEN: 'ACCESS_TOKEN',
-	REFRESH_TOKEN: 'REFRESH_TOKEN',
-});
 
 function generateTokens(email, firstName, lastName) {
 	const accessToken = generateToken({
@@ -15,7 +11,7 @@ function generateTokens(email, firstName, lastName) {
 		lastName,
 		type: TokenType.ACCESS_TOKEN,
 		secret: process.env.ACCESS_TOKEN_SECRET,
-		xpiration: process.env.ACCESS_TOKEN_EXPIRATION,
+		expiration: process.env.ACCESS_TOKEN_EXPIRATION,
 	});
 	const refreshToken = generateToken({
 		email,
@@ -52,7 +48,7 @@ async function verifyToken(token, secret) {
 		return decoded;
 	});
 
-	const isBlacklisted = await redisService.isTokenInBlacklist(token);
+	const isBlacklisted = await redisService.isTokenInExclude(token);
 	if (isBlacklisted) {
 		throw new ServerError(401, 'Token is in blacklist');
 	}
@@ -73,7 +69,6 @@ async function refreshAccessToken(token) {
 }
 
 const jwtService = {
-	TokenType,
 	generateTokens,
 	verifyToken,
 	refreshAccessToken,

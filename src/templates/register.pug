@@ -1,0 +1,197 @@
+doctype html
+html(lang="tr")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Kayıt Onayı
+    style.
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background-color: #f4f4f4;
+      }
+      
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px 20px;
+        text-align: center;
+      }
+      
+      .header h1 {
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+      
+      .header p {
+        font-size: 16px;
+        opacity: 0.9;
+      }
+      
+      .content {
+        padding: 40px 30px;
+      }
+      
+      .welcome-text {
+        font-size: 18px;
+        margin-bottom: 25px;
+        color: #2c3e50;
+      }
+      
+      .code-section {
+        background-color: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 25px;
+        text-align: center;
+        margin: 30px 0;
+      }
+      
+      .code-label {
+        font-size: 16px;
+        color: #6c757d;
+        margin-bottom: 15px;
+        font-weight: 500;
+      }
+      
+      .confirmation-code {
+        font-size: 32px;
+        font-weight: bold;
+        color: #495057;
+        letter-spacing: 8px;
+        background-color: white;
+        padding: 15px 20px;
+        border-radius: 6px;
+        border: 2px solid #e9ecef;
+        display: inline-block;
+        margin: 10px 0;
+        font-family: 'Courier New', monospace;
+      }
+      
+      .instructions {
+        background-color: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 20px;
+        margin: 25px 0;
+        border-radius: 0 6px 6px 0;
+      }
+      
+      .instructions h3 {
+        color: #1976d2;
+        margin-bottom: 10px;
+        font-size: 18px;
+      }
+      
+      .instructions ul {
+        margin-left: 20px;
+        color: #424242;
+      }
+      
+      .instructions li {
+        margin-bottom: 8px;
+      }
+      
+      .warning {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 6px;
+        padding: 15px;
+        margin: 20px 0;
+        color: #856404;
+      }
+      
+      .footer {
+        background-color: #f8f9fa;
+        padding: 25px 30px;
+        text-align: center;
+        border-top: 1px solid #dee2e6;
+      }
+      
+      .footer p {
+        color: #6c757d;
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+      
+      .contact-info {
+        color: #495057;
+        font-size: 14px;
+      }
+      
+      @media (max-width: 600px) {
+        .container {
+          margin: 10px;
+          border-radius: 4px;
+        }
+        
+        .header {
+          padding: 20px 15px;
+        }
+        
+        .header h1 {
+          font-size: 24px;
+        }
+        
+        .content {
+          padding: 25px 20px;
+        }
+        
+        .confirmation-code {
+          font-size: 24px;
+          letter-spacing: 4px;
+          padding: 12px 15px;
+        }
+      }
+
+  body
+    .container
+      .header
+        h1 Hoş Geldiniz!
+        p Hesabınızı doğrulamak için aşağıdaki kodu kullanın
+      
+      .content
+        .welcome-text
+          p Merhaba #{firstName} #{lastName},
+          p Hesabınızı oluşturduğunuz için teşekkür ederiz. Hesabınızı aktifleştirmek için aşağıdaki 6 haneli doğrulama kodunu kullanın:
+        
+        .code-section
+          .code-label Doğrulama Kodu
+          .confirmation-code #{verificationCode}
+        
+        .instructions
+          h3 Nasıl Kullanılır?
+          ul
+            li Yukarıdaki 6 haneli kodu kopyalayın
+            li Uygulamamıza geri dönün
+            li Doğrulama kodunu ilgili alana yapıştırın
+            li "Doğrula" butonuna tıklayın
+        
+        .warning
+          strong ⚠️ Önemli:
+          |  Bu kod 10 dakika süreyle geçerlidir. Süre dolduktan sonra yeni bir kod talep etmeniz gerekecektir.
+        
+        p(style="margin-top: 30px; color: #6c757d; font-size: 14px;")
+          | Eğer bu e-postayı siz talep etmediyseniz, lütfen bu mesajı görmezden gelin.
+      
+      .footer
+        p Bu e-posta otomatik olarak gönderilmiştir, lütfen yanıtlamayın.
+        .contact-info
+          | Sorularınız için: 
+          a(href="mailto:support@example.com" style="color: #667eea; text-decoration: none;") support@example.com

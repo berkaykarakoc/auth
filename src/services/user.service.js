@@ -20,10 +20,21 @@ async function getUserById(id) {
 	return user;
 }
 
+async function verifyUser(email) {
+	const user = await User.findOne({where: {email}});
+	if (!user) {
+		throw new Error('User not found');
+	}
+
+	await user.update({isVerified: true});
+	return user;
+}
+
 const userService = {
 	createUser,
 	getUserByEmail,
 	getUserById,
+	verifyUser,
 };
 
 export default userService;

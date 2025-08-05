@@ -1,9 +1,9 @@
-import ms from 'ms';
-import redisClient from '../config/redis.js';
+import redisClient from '../connections/redis.js';
+import {convertToSeconds} from '../utils/duration.js';
 
 async function addTokenToExclude(token, expiration) {
 	const client = redisClient.getClient();
-	await client.set(token, 'true', 'EX', ms(expiration));
+	await client.set(token, 'true', 'EX', convertToSeconds(expiration));
 }
 
 async function isTokenInExclude(token) {
@@ -12,9 +12,30 @@ async function isTokenInExclude(token) {
 	return isInExclude === 'true';
 }
 
+async function setVerificationCode(email, code, expiration) {
+	const client = redisClient.getClient();
+	const key = `verification:${email}`;
+	await client.set(key, code, 'EX', convertToSeconds(expiration));
+}
+
+async function getVerificationCode(email) {
+	const client = redisClient.getClient();
+	const key = `verification:${email}`;
+	return client.get(key);
+}
+
+async function deleteVerificationCode(email) {
+	const client = redisClient.getClient();
+	const key = `verification:${email}`;
+	await client.del(key);
+}
+
 const redisService = {
-	addTokenToBlacklist: addTokenToExclude,
-	isTokenInBlacklist: isTokenInExclude,
+	addTokenToExclude,
+	isTokenInExclude,
+	setVerificationCode,
+	getVerificationCode,
+	deleteVerificationCode,
 };
 
 export default redisService;

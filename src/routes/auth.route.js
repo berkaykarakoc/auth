@@ -7,6 +7,9 @@ const router = expressRouter();
 
 router.post('/register', authController.register);
 router.post('/login', authController.login);
+router.post('/verify-email', authController.verifyEmail);
+router.post('/resend-verification-code', authController.resendVerificationCode);
+
 router.post('/logout', authMiddleware, refreshMiddleware, authController.logout);
 router.post('/refresh-token', refreshMiddleware, authController.refreshToken);
 

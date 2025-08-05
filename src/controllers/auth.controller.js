@@ -1,6 +1,6 @@
 import process from 'node:process';
-import ms from 'ms';
 import authService from '../services/auth.service.js';
+import {convertToSeconds} from '../utils/duration.js';
 
 async function register(request, response, next) {
 	try {
@@ -20,7 +20,7 @@ async function login(request, response, next) {
 			httpOnly: true,
 			secure: true,
 			sameSite: 'strict',
-			maxAge: ms(process.env.REFRESH_TOKEN_EXPIRATION),
+			maxAge: convertToSeconds(process.env.REFRESH_TOKEN_EXPIRATION),
 		});
 
 		return response.status(200).json({accessToken});
@@ -47,11 +47,33 @@ async function refreshToken(request, response, next) {
 	}
 }
 
+async function verifyEmail(request, response, next) {
+	try {
+		const {email, verificationCode} = request.body;
+		await authService.verifyEmail(email, verificationCode);
+		return response.status(200).json({message: 'Email verified successfully!'});
+	} catch (error) {
+		next(error);
+	}
+}
+
+async function resendVerificationCode(request, response, next) {
+	try {
+		const {firstName, lastName, email, templateName} = request.body;
+		await authService.sendVerificationCode(email, templateName, {firstName, lastName});
+		return response.status(200).json({message: 'Verification code resent successfully!'});
+	} catch (error) {
+		next(error);
+	}
+}
+
 const authController = {
 	register,
 	login,
 	logout,
 	refreshToken,
+	verifyEmail,
+	resendVerificationCode,
 };
 
 export default authController;

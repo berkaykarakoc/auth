@@ -1,6 +1,7 @@
 import process from 'node:process';
 import ServerError from '../errors/server.error.js';
 import jwtService from '../services/jwt.service.js';
+import {TokenType} from '../models/enum.js';
 
 async function authMiddleware(request, response, next) {
 	if (request.headers.authorization) {
@@ -9,7 +10,7 @@ async function authMiddleware(request, response, next) {
 			const decoded = await jwtService.verifyToken(token, process.env.ACCESS_TOKEN_SECRET);
 			try {
 				if (
-					decoded.type !== jwtService.TokenType.ACCESS_TOKEN
+					decoded.type !== TokenType.ACCESS_TOKEN
 				) {
 					return next(new ServerError(401, 'Invalid token type'));
 				}
