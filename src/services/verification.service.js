@@ -3,7 +3,7 @@ import {generateCode} from '../utils/code.js';
 import redisService from './redis.service.js';
 
 async function createVerificationCode(email, verificationType, expiration) {
-	const code = generateCode(process.env.VERIFICATION_CODE_LENGTH);
+	const code = generateCode(Number.parseInt(process.env.VERIFICATION_CODE_LENGTH, 10));
 	await redisService.setVerificationCode(email, code, verificationType, expiration);
 	return code;
 }

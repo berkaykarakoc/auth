@@ -1,9 +1,22 @@
 import process from 'node:process';
 import authService from '../services/auth.service.js';
 import {convertToSeconds} from '../utils/duration.js';
+import {
+	registerSchema,
+	loginSchema,
+	verifyEmailSchema,
+	resendVerificationCodeSchema,
+	passwordResetSchema,
+	verifyPasswordResetSchema,
+} from '../validation/auth.validation.js';
 
 async function register(request, response, next) {
 	try {
+		const {error} = registerSchema.validate(request.body);
+		if (error) {
+			return response.status(400).json({message: error.message});
+		}
+
 		const {firstName, lastName, email} = await authService.register(request.body);
 		return response.status(201).json({
 			firstName, lastName, email, message: 'User registered successfully!',
@@ -15,6 +28,11 @@ async function register(request, response, next) {
 
 async function login(request, response, next) {
 	try {
+		const {error} = loginSchema.validate(request.body);
+		if (error) {
+			return response.status(400).json({message: error.message});
+		}
+
 		const {accessToken, refreshToken} = await authService.login(request.body);
 		response.cookie('token', refreshToken, {
 			httpOnly: true,
@@ -49,6 +67,11 @@ async function refreshToken(request, response, next) {
 
 async function verifyEmail(request, response, next) {
 	try {
+		const {error} = verifyEmailSchema.validate(request.body);
+		if (error) {
+			return response.status(400).json({message: error.message});
+		}
+
 		await authService.verifyEmail(request.body);
 		return response.status(200).json({message: 'Email verified successfully!'});
 	} catch (error) {
@@ -58,6 +81,11 @@ async function verifyEmail(request, response, next) {
 
 async function resendVerificationCode(request, response, next) {
 	try {
+		const {error} = resendVerificationCodeSchema.validate(request.body);
+		if (error) {
+			return response.status(400).json({message: error.message});
+		}
+
 		await authService.sendVerificationCode(request.body);
 		return response.status(200).json({message: 'Verification code resent successfully!'});
 	} catch (error) {
@@ -67,6 +95,11 @@ async function resendVerificationCode(request, response, next) {
 
 async function passwordReset(request, response, next) {
 	try {
+		const {error} = passwordResetSchema.validate(request.body);
+		if (error) {
+			return response.status(400).json({message: error.message});
+		}
+
 		await authService.passwordReset(request.body);
 		return response.status(200).json({message: 'Password reset code sent successfully!'});
 	} catch (error) {
@@ -76,6 +109,11 @@ async function passwordReset(request, response, next) {
 
 async function verifyPasswordReset(request, response, next) {
 	try {
+		const {error} = verifyPasswordResetSchema.validate(request.body);
+		if (error) {
+			return response.status(400).json({message: error.message});
+		}
+
 		await authService.verifyPasswordReset(request.body);
 		return response.status(200).json({message: 'Password reset successfully!'});
 	} catch (error) {

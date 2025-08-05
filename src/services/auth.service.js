@@ -18,7 +18,7 @@ async function register({firstName, lastName, email, password}) {
 	const newUser = await userService.createUser(firstName, lastName, email, hashedPassword);
 
 	await sendVerificationCode({
-		email, firstName, lastName, title: 'Hesap Doğrulama - Kayıt Onayı', verificationType: VerificationType.REGISTER,
+		email, firstName, lastName, title: VerificationType.REGISTER.title, verificationType: VerificationType.REGISTER.value,
 	});
 
 	return {firstName: newUser.get('firstName'), lastName: newUser.get('lastName'), email: newUser.get('email')};
@@ -60,7 +60,7 @@ async function refreshToken(cookie) {
 }
 
 async function verifyEmail({email, code}) {
-	const verified = await verificationService.verifyCode(email, VerificationType.REGISTER, code);
+	const verified = await verificationService.verifyCode(email, VerificationType.REGISTER.value, code);
 	if (!verified) {
 		throw new ServerError(400, 'Invalid confirmation code');
 	}
@@ -69,12 +69,16 @@ async function verifyEmail({email, code}) {
 	return {message: 'Email verified successfully'};
 }
 
-async function sendVerificationCode({email, firstName, lastName, title, verificationType}) {
-	if (verificationType === VerificationType.REGISTER) {
+async function sendVerificationCode({email, firstName, lastName, verificationType}) {
+	let title = '';
+	if (verificationType === VerificationType.REGISTER.value) {
+		title = VerificationType.REGISTER.title;
 		const user = await userService.getUserByEmail(email);
 		if (user.get('isVerified')) {
 			throw new ServerError(400, 'Email already verified');
 		}
+	} else if (verificationType === VerificationType.PASSWORD_RESET.value) {
+		title = VerificationType.PASSWORD_RESET.title;
 	}
 
 	const verificationCode = await verificationService.createVerificationCode(email, verificationType, process.env.VERIFICATION_CODE_EXPIRATION);
@@ -92,13 +96,13 @@ async function passwordReset({email, firstName, lastName}) {
 	}
 
 	await sendVerificationCode({
-		email, firstName, lastName, title: 'Şifre Sıfırlama - Onay Kodu', verificationType: VerificationType.PASSWORD_RESET,
+		email, firstName, lastName, title: VerificationType.PASSWORD_RESET.title, verificationType: VerificationType.PASSWORD_RESET.value,
 	});
 	return {message: 'Password reset code sent successfully'};
 }
 
 async function verifyPasswordReset({email, password, code}) {
-	const verified = await verificationService.verifyCode(email, VerificationType.PASSWORD_RESET, code);
+	const verified = await verificationService.verifyCode(email, VerificationType.PASSWORD_RESET.value, code);
 	if (!verified) {
 		throw new ServerError(400, 'Invalid confirmation code');
 	}

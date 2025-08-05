@@ -4,6 +4,6 @@ export const TokenType = Object.freeze({
 });
 
 export const VerificationType = Object.freeze({
-	REGISTER: 'register',
-	PASSWORD_RESET: 'password-reset',
+	REGISTER: {value: 'register', title: 'Hesap Doğrulama - Kayıt Onayı'},
+	PASSWORD_RESET: {value: 'password-reset', title: 'Şifre Sıfırlama - Onay Kodu'},
 });
