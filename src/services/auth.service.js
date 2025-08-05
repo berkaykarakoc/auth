@@ -1,18 +1,12 @@
 import process from 'node:process';
 import {hash, verify} from 'argon2';
 import ServerError from '../errors/server.error.js';
-import {TemplateName} from '../models/enum.js';
+import {VerificationType} from '../models/enum.js';
 import userService from './user.service.js';
 import jwtService from './jwt.service.js';
 import redisService from './redis.service.js';
 import emailService from './email.service.js';
 import verificationService from './verification.service.js';
-
-async function sendVerificationCode(email, templateName, emailData) {
-	const {firstName, lastName} = emailData;
-	const verificationCode = await verificationService.createVerificationCode(email, process.env.VERIFICATION_CODE_EXPIRATION);
-	emailService.sendEmailWithTemplate(email, 'Hesap Doğrulama - Kayıt Onayı', templateName, {firstName, lastName, verificationCode});
-}
 
 async function register({firstName, lastName, email, password}) {
 	const user = await userService.getUserByEmail(email);
@@ -23,7 +17,9 @@ async function register({firstName, lastName, email, password}) {
 	const hashedPassword = await hash(password);
 	const newUser = await userService.createUser(firstName, lastName, email, hashedPassword);
 
-	await sendVerificationCode(email, TemplateName.REGISTER, {firstName, lastName});
+	await sendVerificationCode({
+		email, firstName, lastName, title: 'Hesap Doğrulama - Kayıt Onayı', verificationType: VerificationType.REGISTER,
+	});
 
 	return {firstName: newUser.get('firstName'), lastName: newUser.get('lastName'), email: newUser.get('email')};
 }
@@ -51,6 +47,7 @@ async function logout(authorization, cookie) {
 
 	await redisService.addTokenToExclude(accessToken, process.env.ACCESS_TOKEN_EXPIRATION);
 	await redisService.addTokenToExclude(refreshToken, process.env.REFRESH_TOKEN_EXPIRATION);
+	return {message: 'Logged out successfully'};
 }
 
 async function refreshToken(cookie) {
@@ -62,14 +59,54 @@ async function refreshToken(cookie) {
 	return {accessToken: await jwtService.refreshAccessToken(refreshToken)};
 }
 
-async function verifyEmail(email, confirmationCode) {
-	const verified = await verificationService.verifyCode(email, confirmationCode);
+async function verifyEmail({email, code}) {
+	const verified = await verificationService.verifyCode(email, VerificationType.REGISTER, code);
 	if (!verified) {
 		throw new ServerError(400, 'Invalid confirmation code');
 	}
 
 	await userService.verifyUser(email);
 	return {message: 'Email verified successfully'};
+}
+
+async function sendVerificationCode({email, firstName, lastName, title, verificationType}) {
+	if (verificationType === VerificationType.REGISTER) {
+		const user = await userService.getUserByEmail(email);
+		if (user.get('isVerified')) {
+			throw new ServerError(400, 'Email already verified');
+		}
+	}
+
+	const verificationCode = await verificationService.createVerificationCode(email, verificationType, process.env.VERIFICATION_CODE_EXPIRATION);
+	emailService.sendEmailWithTemplate(email, title, verificationType, {firstName, lastName, verificationCode});
+}
+
+async function passwordReset({email, firstName, lastName}) {
+	const user = await userService.getUserByEmail(email);
+	if (!user) {
+		throw new ServerError(404, 'User not found');
+	}
+
+	if (!user.get('isVerified')) {
+		throw new ServerError(400, 'Email should be verified first');
+	}
+
+	await sendVerificationCode({
+		email, firstName, lastName, title: 'Şifre Sıfırlama - Onay Kodu', verificationType: VerificationType.PASSWORD_RESET,
+	});
+	return {message: 'Password reset code sent successfully'};
+}
+
+async function verifyPasswordReset({email, password, code}) {
+	const verified = await verificationService.verifyCode(email, VerificationType.PASSWORD_RESET, code);
+	if (!verified) {
+		throw new ServerError(400, 'Invalid confirmation code');
+	}
+
+	const hashedPassword = await hash(password);
+	await userService.updateUserPassword(email, hashedPassword);
+
+	return {message: 'Password reset successfully'};
 }
 
 const authService = {
@@ -79,6 +116,8 @@ const authService = {
 	refreshToken,
 	verifyEmail,
 	sendVerificationCode,
+	passwordReset,
+	verifyPasswordReset,
 };
 
 export default authService;

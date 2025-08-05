@@ -3,7 +3,7 @@ export const TokenType = Object.freeze({
 	REFRESH_TOKEN: 'REFRESH_TOKEN',
 });
 
-export const TemplateName = Object.freeze({
+export const VerificationType = Object.freeze({
 	REGISTER: 'register',
 	PASSWORD_RESET: 'password-reset',
 });

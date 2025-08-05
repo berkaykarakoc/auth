@@ -12,21 +12,21 @@ async function isTokenInExclude(token) {
 	return isInExclude === 'true';
 }
 
-async function setVerificationCode(email, code, expiration) {
+async function setVerificationCode(email, code, verificationType, expiration) {
 	const client = redisClient.getClient();
-	const key = `verification:${email}`;
+	const key = `verification:${verificationType}:${email}`;
 	await client.set(key, code, 'EX', convertToSeconds(expiration));
 }
 
-async function getVerificationCode(email) {
+async function getVerificationCode(email, verificationType) {
 	const client = redisClient.getClient();
-	const key = `verification:${email}`;
+	const key = `verification:${verificationType}:${email}`;
 	return client.get(key);
 }
 
-async function deleteVerificationCode(email) {
+async function deleteVerificationCode(email, verificationType) {
 	const client = redisClient.getClient();
-	const key = `verification:${email}`;
+	const key = `verification:${verificationType}:${email}`;
 	await client.del(key);
 }
 

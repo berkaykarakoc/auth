@@ -49,8 +49,7 @@ async function refreshToken(request, response, next) {
 
 async function verifyEmail(request, response, next) {
 	try {
-		const {email, verificationCode} = request.body;
-		await authService.verifyEmail(email, verificationCode);
+		await authService.verifyEmail(request.body);
 		return response.status(200).json({message: 'Email verified successfully!'});
 	} catch (error) {
 		next(error);
@@ -59,9 +58,26 @@ async function verifyEmail(request, response, next) {
 
 async function resendVerificationCode(request, response, next) {
 	try {
-		const {firstName, lastName, email, templateName} = request.body;
-		await authService.sendVerificationCode(email, templateName, {firstName, lastName});
+		await authService.sendVerificationCode(request.body);
 		return response.status(200).json({message: 'Verification code resent successfully!'});
+	} catch (error) {
+		next(error);
+	}
+}
+
+async function passwordReset(request, response, next) {
+	try {
+		await authService.passwordReset(request.body);
+		return response.status(200).json({message: 'Password reset code sent successfully!'});
+	} catch (error) {
+		next(error);
+	}
+}
+
+async function verifyPasswordReset(request, response, next) {
+	try {
+		await authService.verifyPasswordReset(request.body);
+		return response.status(200).json({message: 'Password reset successfully!'});
 	} catch (error) {
 		next(error);
 	}
@@ -74,6 +90,8 @@ const authController = {
 	refreshToken,
 	verifyEmail,
 	resendVerificationCode,
+	passwordReset,
+	verifyPasswordReset,
 };
 
 export default authController;

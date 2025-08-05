@@ -30,11 +30,22 @@ async function verifyUser(email) {
 	return user;
 }
 
+async function updateUserPassword(email, password) {
+	const user = await User.findOne({where: {email}});
+	if (!user) {
+		throw new Error('User not found');
+	}
+
+	await user.update({password});
+	return user;
+}
+
 const userService = {
 	createUser,
 	getUserByEmail,
 	getUserById,
 	verifyUser,
+	updateUserPassword,
 };
 
 export default userService;
