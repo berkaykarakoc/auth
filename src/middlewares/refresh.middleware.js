@@ -3,10 +3,12 @@ import ServerError from '../errors/server.error.js';
 import jwtService from '../services/jwt.service.js';
 import {TokenType} from '../models/enum.js';
 
+const PUBLIC_KEY = process.env.PUBLIC_KEY.replace(/\\n/g, '\n');
+
 async function refreshMiddleware(request, response, next) {
 	if (request.headers?.cookie?.includes('refreshToken')) {
 		const token = request.headers.cookie.split('refreshToken=')[1];
-		const decoded = await jwtService.verifyToken(token, process.env.REFRESH_TOKEN_SECRET);
+		const decoded = await jwtService.verifyToken(token, PUBLIC_KEY);
 		try {
 			if (
 				decoded.type !== TokenType.REFRESH_TOKEN

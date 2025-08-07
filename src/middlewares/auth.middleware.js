@@ -3,11 +3,13 @@ import ServerError from '../errors/server.error.js';
 import jwtService from '../services/jwt.service.js';
 import {TokenType} from '../models/enum.js';
 
+const PUBLIC_KEY = process.env.PUBLIC_KEY.replace(/\\n/g, '\n');
+
 async function authMiddleware(request, response, next) {
 	if (request.headers.authorization) {
 		const [bearerToken, token] = request.headers.authorization.split(' ');
 		if (bearerToken === 'Bearer') {
-			const decoded = await jwtService.verifyToken(token, process.env.ACCESS_TOKEN_SECRET);
+			const decoded = await jwtService.verifyToken(token, PUBLIC_KEY);
 			try {
 				if (
 					decoded.type !== TokenType.ACCESS_TOKEN
