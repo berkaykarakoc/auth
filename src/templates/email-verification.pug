@@ -71,7 +71,7 @@ html(lang="tr")
         font-weight: 500;
       }
       
-      .confirmation-code {
+      .email-verification-token {
         font-size: 32px;
         font-weight: bold;
         color: #495057;
@@ -153,7 +153,7 @@ html(lang="tr")
           padding: 25px 20px;
         }
         
-        .confirmation-code {
+        .email-verification-token {
           font-size: 24px;
           letter-spacing: 4px;
           padding: 12px 15px;
@@ -168,12 +168,12 @@ html(lang="tr")
       
       .content
         .welcome-text
-          p Merhaba #{firstName} #{lastName},
+          p Merhaba #{email},
           p Hesabınızı oluşturduğunuz için teşekkür ederiz. Hesabınızı aktifleştirmek için aşağıdaki 6 haneli doğrulama kodunu kullanın:
         
         .code-section
           .code-label Doğrulama Kodu
-          .confirmation-code #{verificationCode}
+          .email-verification-token #{emailVerificationToken}
         
         .instructions
           h3 Nasıl Kullanılır?

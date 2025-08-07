@@ -1,110 +1,128 @@
 import process from 'node:process';
 import {hash, verify} from 'argon2';
 import ServerError from '../errors/server.error.js';
-import {VerificationType} from '../models/enum.js';
+import {TokenType} from '../models/token-type.js';
 import userService from './user.service.js';
-import jwtService from './jwt.service.js';
-import redisService from './redis.service.js';
+import tokenService from './token.service.js';
 import emailService from './email.service.js';
-import verificationService from './verification.service.js';
 
-async function register({firstName, lastName, email, password}) {
+async function register(email, role, password) {
 	const user = await userService.getUserByEmail(email);
 	if (user) {
-		throw new ServerError(400, 'User already exists!');
+		throw new ServerError(409, 'A user with this email address already exists');
 	}
 
 	const hashedPassword = await hash(password);
-	const newUser = await userService.createUser(firstName, lastName, email, hashedPassword);
-
-	await sendVerificationCode({
-		email, firstName, lastName, title: VerificationType.REGISTER.title, verificationType: VerificationType.REGISTER.value,
-	});
-
-	return {firstName: newUser.get('firstName'), lastName: newUser.get('lastName'), email: newUser.get('email')};
+	const newUser = await userService.createUser(email, role, hashedPassword);
+	const emailVerificationToken = await tokenService.generateEmailVerificationToken(newUser.get('id'));
+	emailService.sendEmailWithTemplate(
+		newUser.get('email'),
+		TokenType.EMAIL_VERIFICATION,
+		{
+			email: newUser.get('email'),
+			emailVerificationToken,
+		},
+	);
 }
 
-async function login({email, password}) {
+async function resendEmailVerificationToken(email) {
 	const user = await userService.getUserByEmail(email);
 	if (!user) {
-		throw new ServerError(401, 'Invalid credentials!');
+		throw new ServerError(401, 'Invalid credentials');
+	}
+
+	if (user.get('isVerified')) {
+		throw new ServerError(400, 'Email already verified');
+	}
+
+	const emailVerificationToken = await tokenService.generateEmailVerificationToken(user.get('id'));
+	emailService.sendEmailWithTemplate(
+		user.get('email'),
+		TokenType.EMAIL_VERIFICATION,
+		{
+			email: user.get('email'),
+			emailVerificationToken,
+		},
+	);
+}
+
+async function verifyEmail(email, token) {
+	const user = await userService.getUserByEmail(email);
+	if (!user) {
+		throw new ServerError(401, 'Invalid credentials');
+	}
+
+	const verified = await tokenService.verifyEmailVerificationToken(user.get('id'), token);
+	if (!verified) {
+		throw new ServerError(400, 'Invalid confirmation token');
+	}
+
+	const verifiedUser = await userService.verifyUser(email);
+
+	return tokenService.generateJwtTokens(
+		verifiedUser.get('id'),
+		verifiedUser.get('email'),
+	);
+}
+
+async function login(email, password) {
+	const user = await userService.getUserByEmail(email);
+	if (!user) {
+		throw new ServerError(401, 'Invalid credentials');
 	}
 
 	if (!user.get('isVerified')) {
-		throw new ServerError(401, 'Email not verified! Please verify your email first.');
+		throw new ServerError(401, 'Email not verified. Please verify your email first');
 	}
 
 	if (!await verify(user.get('password'), password)) {
-		throw new ServerError(401, 'Invalid credentials!');
+		throw new ServerError(401, 'Invalid credentials');
 	}
 
-	return jwtService.generateTokens(email, user.get('firstName'), user.get('lastName'));
-}
-
-async function logout(authorization, cookie) {
-	const accessToken = authorization.split(' ')[1];
-	const refreshToken = cookie.split('refreshToken=')[1];
-
-	await redisService.addTokenToExclude(accessToken, process.env.ACCESS_TOKEN_EXPIRATION);
-	await redisService.addTokenToExclude(refreshToken, process.env.REFRESH_TOKEN_EXPIRATION);
-	return {message: 'Logged out successfully'};
+	return tokenService.generateJwtTokens(
+		user.get('id'),
+		user.get('email'),
+	);
 }
 
 async function refreshToken(cookie) {
-	const refreshToken = cookie.split('refreshToken=')[1];
-	if (!refreshToken) {
-		throw new ServerError(400, 'No refresh token provided');
-	}
+	const refreshTokenMatch = cookie.match(/refreshToken=([^;]+)/);
+	const {sub, email} = tokenService.decodeJwtToken(refreshTokenMatch[1]);
 
-	return {accessToken: await jwtService.refreshAccessToken(refreshToken)};
+	return tokenService.generateJwtTokens(sub, email);
 }
 
-async function verifyEmail({email, code}) {
-	const verified = await verificationService.verifyCode(email, VerificationType.REGISTER.value, code);
-	if (!verified) {
-		throw new ServerError(400, 'Invalid confirmation code');
-	}
-
-	await userService.verifyUser(email);
-	return {message: 'Email verified successfully'};
-}
-
-async function sendVerificationCode({email, firstName, lastName, verificationType}) {
-	let title = '';
-	if (verificationType === VerificationType.REGISTER.value) {
-		title = VerificationType.REGISTER.title;
-		const user = await userService.getUserByEmail(email);
-		if (user.get('isVerified')) {
-			throw new ServerError(400, 'Email already verified');
-		}
-	} else if (verificationType === VerificationType.PASSWORD_RESET.value) {
-		title = VerificationType.PASSWORD_RESET.title;
-	}
-
-	const verificationCode = await verificationService.createVerificationCode(email, verificationType, process.env.VERIFICATION_CODE_EXPIRATION);
-	emailService.sendEmailWithTemplate(email, title, verificationType, {firstName, lastName, verificationCode});
-}
-
-async function passwordReset({email, firstName, lastName}) {
+async function forgotPassword(email) {
 	const user = await userService.getUserByEmail(email);
 	if (!user) {
-		throw new ServerError(404, 'User not found');
+		throw new ServerError(401, 'Invalid credentials');
 	}
 
 	if (!user.get('isVerified')) {
 		throw new ServerError(400, 'Email should be verified first');
 	}
 
-	await sendVerificationCode({
-		email, firstName, lastName, title: VerificationType.PASSWORD_RESET.title, verificationType: VerificationType.PASSWORD_RESET.value,
-	});
-	return {message: 'Password reset code sent successfully'};
+	const passwordResetToken = await tokenService.generatePasswordResetToken(user.get('id'));
+	emailService.sendEmailWithTemplate(
+		user.get('email'),
+		TokenType.PASSWORD_RESET,
+		{
+			email: user.get('email'),
+			passwordResetUrl: process.env.PASSWORD_RESET_URL,
+			passwordResetToken,
+		},
+	);
 }
 
-async function verifyPasswordReset({email, password, code}) {
-	const verified = await verificationService.verifyCode(email, VerificationType.PASSWORD_RESET.value, code);
+async function resetPassword(email, password, token) {
+	const user = await userService.getUserByEmail(email);
+	if (!user) {
+		throw new ServerError(401, 'Invalid credentials');
+	}
+
+	const verified = await tokenService.verifyPasswordResetToken(user.get('id'), token);
 	if (!verified) {
-		throw new ServerError(400, 'Invalid confirmation code');
+		throw new ServerError(401, 'Invalid confirmation code');
 	}
 
 	const hashedPassword = await hash(password);
@@ -113,15 +131,24 @@ async function verifyPasswordReset({email, password, code}) {
 	return {message: 'Password reset successfully'};
 }
 
+async function logout(authorization, cookie) {
+	const accessToken = authorization.split(' ')[1];
+
+	const refreshTokenMatch = cookie.match(/refreshToken=([^;]+)/);
+	const refreshToken = refreshTokenMatch[1];
+
+	await tokenService.invalidateTokens(accessToken, refreshToken);
+}
+
 const authService = {
 	register,
-	login,
-	logout,
-	refreshToken,
+	resendEmailVerificationToken,
 	verifyEmail,
-	sendVerificationCode,
-	passwordReset,
-	verifyPasswordReset,
+	login,
+	refreshToken,
+	forgotPassword,
+	resetPassword,
+	logout,
 };
 
 export default authService;

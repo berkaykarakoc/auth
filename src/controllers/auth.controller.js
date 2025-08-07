@@ -5,9 +5,8 @@ import {
 	registerSchema,
 	loginSchema,
 	verifyEmailSchema,
-	resendVerificationCodeSchema,
-	passwordResetSchema,
-	verifyPasswordResetSchema,
+	resetPasswordSchema,
+	emailSchema,
 } from '../validation/auth.validation.js';
 
 async function register(request, response, next) {
@@ -17,9 +16,52 @@ async function register(request, response, next) {
 			return response.status(400).json({message: error.message});
 		}
 
-		const {firstName, lastName, email} = await authService.register(request.body);
+		const {email, role, password} = request.body;
+		await authService.register(email, role, password);
+
 		return response.status(201).json({
-			firstName, lastName, email, message: 'User registered successfully!',
+			message: 'Registration successful. Email verification link has been sent to your email address.',
+		});
+	} catch (error) {
+		next(error);
+	}
+}
+
+async function resendEmailVerificationToken(request, response, next) {
+	try {
+		const {error} = emailSchema.validate(request.body.email);
+		if (error) {
+			return response.status(400).json({message: error.message});
+		}
+
+		await authService.resendEmailVerificationToken(request.body.email);
+		return response.status(200).json({
+			message: 'Email verification link has been sent to your email address.',
+		});
+	} catch (error) {
+		next(error);
+	}
+}
+
+async function verifyEmail(request, response, next) {
+	try {
+		const {error} = verifyEmailSchema.validate(request.body);
+		if (error) {
+			return response.status(400).json({message: error.message});
+		}
+
+		const {email, token} = request.body;
+		const {accessToken, refreshToken} = await authService.verifyEmail(email, token);
+		response.cookie('token', refreshToken, {
+			httpOnly: true,
+			secure: true,
+			sameSite: 'strict',
+			maxAge: convertToSeconds(process.env.REFRESH_TOKEN_EXPIRATION),
+		});
+
+		return response.status(200).json({
+			message: 'Email verified successfully.',
+			accessToken,
 		});
 	} catch (error) {
 		next(error);
@@ -33,7 +75,8 @@ async function login(request, response, next) {
 			return response.status(400).json({message: error.message});
 		}
 
-		const {accessToken, refreshToken} = await authService.login(request.body);
+		const {email, password} = request.body;
+		const {accessToken, refreshToken} = await authService.login(email, password);
 		response.cookie('token', refreshToken, {
 			httpOnly: true,
 			secure: true,
@@ -47,75 +90,60 @@ async function login(request, response, next) {
 	}
 }
 
-async function logout(request, response, next) {
-	try {
-		await authService.logout(request.headers.authorization, request.headers.cookie);
-		return response.status(200).json({message: 'Logged out successfully!'});
-	} catch (error) {
-		next(error);
-	}
-}
-
 async function refreshToken(request, response, next) {
 	try {
-		const {accessToken} = await authService.refreshToken(request.headers.cookie);
+		const {accessToken, refreshToken} = await authService.refreshToken(request.headers.cookie);
+		response.cookie('token', refreshToken, {
+			httpOnly: true,
+			secure: true,
+			sameSite: 'strict',
+			maxAge: convertToSeconds(process.env.REFRESH_TOKEN_EXPIRATION),
+		});
 		return response.status(200).json({accessToken});
 	} catch (error) {
 		next(error);
 	}
 }
 
-async function verifyEmail(request, response, next) {
+async function forgotPassword(request, response, next) {
 	try {
-		const {error} = verifyEmailSchema.validate(request.body);
+		const {error} = emailSchema.validate(request.body.email);
 		if (error) {
 			return response.status(400).json({message: error.message});
 		}
 
-		await authService.verifyEmail(request.body);
-		return response.status(200).json({message: 'Email verified successfully!'});
+		await authService.forgotPassword(request.body.email);
+		return response.status(200).json({
+			message: 'Password reset link has been sent to your email address.',
+		});
 	} catch (error) {
 		next(error);
 	}
 }
 
-async function resendVerificationCode(request, response, next) {
+async function resetPassword(request, response, next) {
 	try {
-		const {error} = resendVerificationCodeSchema.validate(request.body);
+		const {error} = resetPasswordSchema.validate(request.body);
 		if (error) {
 			return response.status(400).json({message: error.message});
 		}
 
-		await authService.sendVerificationCode(request.body);
-		return response.status(200).json({message: 'Verification code resent successfully!'});
+		const {email, password, token} = request.body;
+		await authService.resetPassword(email, password, token);
+		return response.status(200).json({
+			message: 'Password reset successfully.',
+		});
 	} catch (error) {
 		next(error);
 	}
 }
 
-async function passwordReset(request, response, next) {
+async function logout(request, response, next) {
 	try {
-		const {error} = passwordResetSchema.validate(request.body);
-		if (error) {
-			return response.status(400).json({message: error.message});
-		}
-
-		await authService.passwordReset(request.body);
-		return response.status(200).json({message: 'Password reset code sent successfully!'});
-	} catch (error) {
-		next(error);
-	}
-}
-
-async function verifyPasswordReset(request, response, next) {
-	try {
-		const {error} = verifyPasswordResetSchema.validate(request.body);
-		if (error) {
-			return response.status(400).json({message: error.message});
-		}
-
-		await authService.verifyPasswordReset(request.body);
-		return response.status(200).json({message: 'Password reset successfully!'});
+		await authService.logout(request.headers.authorization, request.headers.cookie);
+		return response.status(204).json({
+			message: 'You have been successfully logged out.',
+		});
 	} catch (error) {
 		next(error);
 	}
@@ -123,13 +151,13 @@ async function verifyPasswordReset(request, response, next) {
 
 const authController = {
 	register,
-	login,
-	logout,
-	refreshToken,
+	resendEmailVerificationToken,
 	verifyEmail,
-	resendVerificationCode,
-	passwordReset,
-	verifyPasswordReset,
+	login,
+	refreshToken,
+	forgotPassword,
+	resetPassword,
+	logout,
 };
 
 export default authController;

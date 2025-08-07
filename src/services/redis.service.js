@@ -3,7 +3,7 @@ import {convertToSeconds} from '../utils/duration.js';
 
 async function addTokenToExclude(token, expiration) {
 	const client = redisClient.getClient();
-	await client.set(token, 'true', 'EX', convertToSeconds(expiration));
+	await client.set(token, 'true', 'EX', expiration);
 }
 
 async function isTokenInExclude(token) {
@@ -12,30 +12,33 @@ async function isTokenInExclude(token) {
 	return isInExclude === 'true';
 }
 
-async function setVerificationCode(email, code, verificationType, expiration) {
+async function setToken(userId, token, tokenType, expiration) {
 	const client = redisClient.getClient();
-	const key = `verification:${verificationType}:${email}`;
-	await client.set(key, code, 'EX', convertToSeconds(expiration));
+	await client.set(`token:${userId}:${tokenType}`, token, 'EX', convertToSeconds(expiration));
 }
 
-async function getVerificationCode(email, verificationType) {
+async function getToken(userId, tokenType) {
 	const client = redisClient.getClient();
-	const key = `verification:${verificationType}:${email}`;
-	return client.get(key);
+	return client.get(`token:${userId}:${tokenType}`);
 }
 
-async function deleteVerificationCode(email, verificationType) {
+async function deleteToken(userId, tokenType) {
 	const client = redisClient.getClient();
-	const key = `verification:${verificationType}:${email}`;
-	await client.del(key);
+	await client.del(`token:${userId}:${tokenType}`);
+}
+
+async function getTokenExpiration(userId, tokenType) {
+	const client = redisClient.getClient();
+	return client.ttl(`token:${userId}:${tokenType}`);
 }
 
 const redisService = {
 	addTokenToExclude,
 	isTokenInExclude,
-	setVerificationCode,
-	getVerificationCode,
-	deleteVerificationCode,
+	setToken,
+	getToken,
+	deleteToken,
+	getTokenExpiration,
 };
 
 export default redisService;

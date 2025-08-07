@@ -1,13 +1,23 @@
 import User from '../models/user.js';
+import ServerError from '../errors/server.error.js';
 
-async function createUser(firstName, lastName, email, password) {
+async function createUser(email, role, password) {
 	const newUser = await User.create({
-		firstName,
-		lastName,
 		email,
+		role,
 		password,
 	});
 	return newUser;
+}
+
+async function verifyUser(email) {
+	const user = await User.findOne({where: {email}});
+	if (!user) {
+		throw new ServerError(404, 'User not found');
+	}
+
+	await user.update({isVerified: true});
+	return user;
 }
 
 async function getUserByEmail(email) {
@@ -20,20 +30,10 @@ async function getUserById(id) {
 	return user;
 }
 
-async function verifyUser(email) {
-	const user = await User.findOne({where: {email}});
-	if (!user) {
-		throw new Error('User not found');
-	}
-
-	await user.update({isVerified: true});
-	return user;
-}
-
 async function updateUserPassword(email, password) {
 	const user = await User.findOne({where: {email}});
 	if (!user) {
-		throw new Error('User not found');
+		throw new ServerError(404, 'User not found');
 	}
 
 	await user.update({password});

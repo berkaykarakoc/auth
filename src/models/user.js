@@ -10,16 +10,6 @@ User.init(
 			defaultValue: DataTypes.UUIDV4,
 			primaryKey: true,
 		},
-		firstName: {
-			type: DataTypes.STRING,
-			allowNull: false,
-			field: 'first_name',
-		},
-		lastName: {
-			type: DataTypes.STRING,
-			allowNull: false,
-			field: 'last_name',
-		},
 		email: {
 			type: DataTypes.STRING,
 			allowNull: false,
@@ -35,6 +25,12 @@ User.init(
 				is: /^\$argon2(id|i|d)\$[a-zA-Z\d$=,.+/]+$/,
 			},
 			allowNull: false,
+		},
+		role: {
+			// eslint-disable-next-line new-cap
+			type: DataTypes.ENUM(['admin', 'user']),
+			allowNull: false,
+			defaultValue: 'user',
 		},
 		isVerified: {
 			type: DataTypes.BOOLEAN,

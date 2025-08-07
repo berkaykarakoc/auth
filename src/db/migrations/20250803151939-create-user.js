@@ -6,16 +6,6 @@ export async function up(queryInterface, Sequelize) {
 			defaultValue: Sequelize.UUIDV4,
 			primaryKey: true,
 		},
-		firstName: {
-			type: Sequelize.STRING,
-			allowNull: false,
-			field: 'first_name',
-		},
-		lastName: {
-			type: Sequelize.STRING,
-			allowNull: false,
-			field: 'last_name',
-		},
 		email: {
 			type: Sequelize.STRING,
 			allowNull: false,
@@ -24,6 +14,18 @@ export async function up(queryInterface, Sequelize) {
 		password: {
 			type: Sequelize.STRING,
 			allowNull: false,
+		},
+		role: {
+			// eslint-disable-next-line new-cap
+			type: Sequelize.ENUM(['admin', 'user']),
+			allowNull: false,
+			defaultValue: 'user',
+		},
+		isVerified: {
+			type: Sequelize.BOOLEAN,
+			allowNull: false,
+			defaultValue: false,
+			field: 'is_verified',
 		},
 		createdAt: {
 			allowNull: false,

@@ -2,11 +2,18 @@ import process from 'node:process';
 import path from 'node:path';
 import pug from 'pug';
 import transporter from '../connections/email.js';
+import {TokenType} from '../models/token-type.js';
 
-async function sendEmailWithTemplate(to, subject, templateName, emailData) {
+const EMAIL_SUBJECTS = {
+	[TokenType.EMAIL_VERIFICATION]: process.env.EMAIL_VERIFICATION_SUBJECT || 'Email Verification',
+	[TokenType.PASSWORD_RESET]: process.env.PASSWORD_RESET_SUBJECT || 'Password Reset',
+};
+
+async function sendEmailWithTemplate(to, templateName, emailData) {
 	const pugTemplatePath = path.join(process.cwd(), 'src', 'templates', `${templateName}.pug`);
 	const compiledFunction = pug.compileFile(pugTemplatePath);
 	const emailHTML = compiledFunction(emailData);
+	const subject = EMAIL_SUBJECTS[templateName] || 'Notification';
 	const mailOptions = {
 		from: process.env.SMTP_MAIL,
 		to,

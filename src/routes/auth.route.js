@@ -8,9 +8,9 @@ const router = expressRouter();
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.post('/verify-email', authController.verifyEmail);
-router.post('/resend-verification-code', authController.resendVerificationCode);
-router.post('/password-reset', authController.passwordReset);
-router.post('/verify-password-reset', authController.verifyPasswordReset);
+router.post('/resend-email-verification', authController.resendEmailVerificationToken);
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password', authController.resetPassword);
 
 router.post('/logout', authMiddleware, refreshMiddleware, authController.logout);
 router.post('/refresh-token', refreshMiddleware, authController.refreshToken);

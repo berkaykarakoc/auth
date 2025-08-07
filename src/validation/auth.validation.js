@@ -1,13 +1,21 @@
 import process from 'node:process';
 import Joi from 'joi';
-import {VerificationType} from '../models/enum.js';
 
-const emailSchema = Joi.string()
+export const emailSchema = Joi.string()
 	.email()
 	.required()
 	.messages({
 		'string.email': 'Invalid email address',
 		'string.empty': 'Email is required',
+	});
+
+const roleSchema = Joi.string()
+	.valid('user')
+	.required()
+	.messages({
+		'any.only': 'Invalid role',
+		'string.valid': 'Invalid role',
+		'string.empty': 'Role is required',
 	});
 
 const passwordSchema = Joi.string()
@@ -30,80 +38,40 @@ const repeatPasswordSchema = Joi.string()
 		'string.empty': 'Please confirm your password',
 	});
 
-const nameSchema = Joi.string()
-	.alphanum()
-	.min(2)
-	.max(30)
+const emailVerificationTokenSchema = Joi.string()
+	.length(Number.parseInt(process.env.EMAIL_VERIFICATION_TOKEN_LENGTH, 10))
 	.required()
 	.messages({
-		'string.letters': 'Name must contain only letters',
-		'string.min': 'Name must be at least 2 characters long',
-		'string.max': 'Name must be less than 30 characters long',
-		'string.empty': 'Name is required',
+		'string.length': `Email verification token must be exactly ${process.env.EMAIL_VERIFICATION_TOKEN_LENGTH} characters long.`,
 	});
 
-const verificationCodeSchema = Joi.string()
-	.length(Number.parseInt(process.env.VERIFICATION_CODE_LENGTH, 10))
+const passwordResetTokenSchema = Joi.string()
+	.length(Number.parseInt(process.env.PASSWORD_RESET_TOKEN_LENGTH, 10))
 	.required()
 	.messages({
-		'string.length': 'Verification code must be exactly 6 characters long',
-	});
-
-const verificationTypeSchema = Joi.string()
-	.valid(...Object.values(VerificationType).map((type) => type.value))
-	.required()
-	.messages({
-		'string.valid': 'Invalid verification type',
+		'string.length': `Password reset token must be exactly ${process.env.PASSWORD_RESET_TOKEN_LENGTH} characters long.`,
 	});
 
 export const registerSchema = Joi.object({
-	firstName: nameSchema,
-
-	lastName: nameSchema,
-
 	email: emailSchema,
-
+	role: roleSchema,
 	password: passwordSchema,
-
 	repeatPassword: repeatPasswordSchema,
-});
-
-export const loginSchema = Joi.object({
-	email: emailSchema,
-
-	password: passwordSchema,
 });
 
 export const verifyEmailSchema = Joi.object({
 	email: emailSchema,
-
-	code: verificationCodeSchema,
+	token: emailVerificationTokenSchema,
 });
 
-export const resendVerificationCodeSchema = Joi.object({
+export const loginSchema = Joi.object({
 	email: emailSchema,
-
-	firstName: nameSchema,
-
-	lastName: nameSchema,
-
-	verificationType: verificationTypeSchema,
-});
-
-export const passwordResetSchema = Joi.object({
-	email: emailSchema,
-
-	firstName: nameSchema,
-
-	lastName: nameSchema,
-});
-
-export const verifyPasswordResetSchema = Joi.object({
-	email: emailSchema,
-
 	password: passwordSchema,
+});
 
+export const resetPasswordSchema = Joi.object({
+	email: emailSchema,
+	password: passwordSchema,
 	repeatPassword: repeatPasswordSchema,
-
-	code: verificationCodeSchema,
+	token: passwordResetTokenSchema,
 });
