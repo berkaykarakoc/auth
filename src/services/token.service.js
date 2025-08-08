@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import ServerError from '../errors/server.error.js';
 import {TokenType} from '../models/token-type.js';
-import {convertToSeconds} from '../utils/duration.js';
+import {convertToSeconds} from '../utils/time.util.js';
 import redisService from './redis.service.js';
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY.replaceAll(String.raw`\n`, '\n');

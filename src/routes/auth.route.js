@@ -2,6 +2,7 @@ import {Router as expressRouter} from 'express';
 import authController from '../controllers/auth.controller.js';
 import refreshMiddleware from '../middlewares/refresh.middleware.js';
 import authMiddleware from '../middlewares/auth.middleware.js';
+import {authLimiter, emailVerificationLimiter, passwordResetLimiter} from '../middlewares/limiter.middleware.js';
 
 const router = expressRouter();
 
@@ -52,7 +53,7 @@ const router = expressRouter();
  *                   type: string
  *                   example: Registration successful. Email verification link has been sent to your email address
  */
-router.post('/register', authController.register);
+router.post('/register', authLimiter, authController.register);
 
 /**
  * @swagger
@@ -93,7 +94,7 @@ router.post('/register', authController.register);
  *         schema:
  *           type: string
  */
-router.post('/verify-email', authController.verifyEmail);
+router.post('/verify-email', emailVerificationLimiter, authController.verifyEmail);
 
 /**
  * @swagger
@@ -124,7 +125,7 @@ router.post('/verify-email', authController.verifyEmail);
  *                   type: string
  *                   example: Email verification link has been sent to your email address
  */
-router.post('/resend-email-verification', authController.resendEmailVerificationToken);
+router.post('/resend-email-verification', emailVerificationLimiter, authController.resendEmailVerificationToken);
 
 /**
  * @swagger
@@ -162,7 +163,7 @@ router.post('/resend-email-verification', authController.resendEmailVerification
  *         schema:
  *           type: string
  */
-router.post('/login', authController.login);
+router.post('/login', authLimiter, authController.login);
 
 /**
  * @swagger
@@ -189,7 +190,7 @@ router.post('/login', authController.login);
  *         schema:
  *           type: string
  */
-router.post('/refresh-token', refreshMiddleware, authController.refreshToken);
+router.post('/refresh-token', authLimiter, refreshMiddleware, authController.refreshToken);
 
 /**
  * @swagger
@@ -220,7 +221,7 @@ router.post('/refresh-token', refreshMiddleware, authController.refreshToken);
  *                   type: string
  *                   example: Password reset link has been sent to your email address
  */
-router.post('/forgot-password', authController.forgotPassword);
+router.post('/forgot-password', passwordResetLimiter, authController.forgotPassword);
 
 /**
  * @swagger
@@ -259,7 +260,7 @@ router.post('/forgot-password', authController.forgotPassword);
  *                   type: string
  *                   example: Password reset successfully
  */
-router.post('/reset-password', authController.resetPassword);
+router.post('/reset-password', passwordResetLimiter, authController.resetPassword);
 
 /**
  * @swagger

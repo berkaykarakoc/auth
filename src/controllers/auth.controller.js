@@ -1,6 +1,6 @@
 import process from 'node:process';
 import authService from '../services/auth.service.js';
-import {convertToSeconds} from '../utils/duration.js';
+import {convertToSeconds} from '../utils/time.util.js';
 import {
 	registerSchema,
 	loginSchema,

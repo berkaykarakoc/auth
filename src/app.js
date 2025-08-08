@@ -13,6 +13,7 @@ import redisClient from './config/redis.js';
 import logger from './config/logger.js';
 import correlationMiddleware from './middlewares/correlation.middleware.js';
 import requestLogger from './middlewares/request-logger.middleware.js';
+import {generalLimiter, healthCheckLimiter} from './middlewares/limiter.middleware.js';
 
 config();
 
@@ -35,6 +36,8 @@ app.use(cors({
 app.use(helmet());
 app.use(json());
 app.use(urlencoded({extended: true}));
+
+app.use(generalLimiter);
 
 app.use('/auth', authRoutes);
 app.use('/me', meRoutes);
@@ -85,7 +88,7 @@ app.use(errorMiddleware);
  *                 error:
  *                   type: string
  */
-app.get('/health', async (request, response) => {
+app.get('/health', healthCheckLimiter, async (request, response) => {
 	try {
 		// Check database connection
 		await sequelize.authenticate();

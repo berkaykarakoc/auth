@@ -31,3 +31,7 @@ export function convertToSeconds(durationString) {
 		}
 	}
 }
+
+export function convertToMilliseconds(durationString) {
+	return convertToSeconds(durationString) * 1000;
+}

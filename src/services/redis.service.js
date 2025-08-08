@@ -1,5 +1,5 @@
 import redisClient from '../config/redis.js';
-import {convertToSeconds} from '../utils/duration.js';
+import {convertToSeconds} from '../utils/time.util.js';
 
 async function addTokenToExclude(token, expiration) {
 	const client = redisClient.getClient();
