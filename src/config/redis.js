@@ -1,6 +1,7 @@
 // RedisClient.js
 import process from 'node:process';
 import Redis from 'ioredis';
+import logger from './logger.js';
 
 class RedisClient {
 	constructor() {
@@ -13,11 +14,11 @@ class RedisClient {
 			});
 
 			this.client.on('connect', () => {
-				console.info('Connected to Redis');
+				logger.info('Connected to Redis');
 			});
 
 			this.client.on('error', error => {
-				console.error('Redis error', error);
+				logger.error('Redis error', error);
 			});
 
 			RedisClient.instance = this;

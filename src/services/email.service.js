@@ -3,6 +3,7 @@ import path from 'node:path';
 import pug from 'pug';
 import transporter from '../config/email.js';
 import {TokenType} from '../models/token-type.js';
+import logger from '../config/logger.js';
 
 const EMAIL_SUBJECTS = {
 	[TokenType.EMAIL_VERIFICATION]: process.env.EMAIL_VERIFICATION_SUBJECT || 'Email Verification',
@@ -21,7 +22,7 @@ async function sendEmailWithTemplate(to, templateName, emailData) {
 		html: emailHTML,
 	};
 	const info = await transporter.sendMail(mailOptions);
-	console.info('Email sent:', info.response);
+	logger.info('Email sent:', info.response);
 }
 
 const mailingService = {

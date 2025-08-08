@@ -21,10 +21,10 @@
     "ioredis": "^5.7.0",
     "joi": "^18.0.0",
     "jsonwebtoken": "^9.0.2",
-    "morgan": "^1.10.1",
     "nodemailer": "^7.0.5",
     "pg": "^8.16.3",
     "pg-hstore": "^2.3.4",
+    "pino": "^9.8.0",
     "pug": "^3.0.3",
     "sequelize": "^6.37.7",
     "swagger-jsdoc": "^6.2.8",
@@ -33,7 +33,18 @@
   "devDependencies": {
     "dotenv": "^17.2.1",
     "nodemon": "^3.1.10",
+    "pino-pretty": "^13.1.1",
     "sequelize-cli": "^6.6.3",
     "xo": "^1.2.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "@eslint/plugin-kit": "^0.3.4"
+    },
+    "onlyBuiltDependencies": [
+      "@scarf/scarf",
+      "argon2",
+      "unrs-resolver"
+    ]
   }
 }
