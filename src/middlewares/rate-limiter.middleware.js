@@ -3,7 +3,7 @@ import rateLimit from 'express-rate-limit';
 import {convertToMilliseconds} from '../utils/time.util.js';
 
 // General API rate limiter
-export const generalLimiter = rateLimit({
+export const generalRateLimiter = rateLimit({
 	windowMs: convertToMilliseconds(process.env.GENERAL_RATE_LIMIT_WINDOW),
 	max: Number.parseInt(process.env.GENERAL_RATE_LIMIT_MAX_REQUESTS, 10),
 	message: {
@@ -23,7 +23,7 @@ export const generalLimiter = rateLimit({
 });
 
 // Strict limiter for authentication endpoints
-export const authLimiter = rateLimit({
+export const authRateLimiter = rateLimit({
 	windowMs: convertToMilliseconds(process.env.AUTH_RATE_LIMIT_WINDOW),
 	max: Number.parseInt(process.env.AUTH_RATE_LIMIT_MAX_REQUESTS, 10),
 	message: {
@@ -43,7 +43,7 @@ export const authLimiter = rateLimit({
 });
 
 // Email verification limiter
-export const emailVerificationLimiter = rateLimit({
+export const emailVerificationRateLimiter = rateLimit({
 	windowMs: convertToMilliseconds(process.env.EMAIL_VERIFICATION_RATE_LIMIT_WINDOW),
 	max: Number.parseInt(process.env.EMAIL_VERIFICATION_RATE_LIMIT_MAX_REQUESTS, 10),
 	message: {
@@ -63,7 +63,7 @@ export const emailVerificationLimiter = rateLimit({
 });
 
 // Password reset limiter
-export const passwordResetLimiter = rateLimit({
+export const passwordResetRateLimiter = rateLimit({
 	windowMs: convertToMilliseconds(process.env.PASSWORD_RESET_RATE_LIMIT_WINDOW),
 	max: Number.parseInt(process.env.PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS, 10),
 	message: {
@@ -83,7 +83,7 @@ export const passwordResetLimiter = rateLimit({
 });
 
 // Health check limiter (very permissive)
-export const healthCheckLimiter = rateLimit({
+export const healthCheckRateLimiter = rateLimit({
 	windowMs: convertToMilliseconds(process.env.HEALTH_CHECK_RATE_LIMIT_WINDOW),
 	max: Number.parseInt(process.env.HEALTH_CHECK_RATE_LIMIT_MAX_REQUESTS, 10),
 	message: {
@@ -103,4 +103,4 @@ export const healthCheckLimiter = rateLimit({
 });
 
 // Default limiter
-export default generalLimiter;
+export default generalRateLimiter;

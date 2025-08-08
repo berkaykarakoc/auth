@@ -41,16 +41,6 @@ const router = expressRouter();
  *                 error:
  *                   type: string
  *                   example: Unauthorized
- *       429:
- *         description: Too many requests
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: Too many requests from this IP, please try again later
  */
 router.get('/', authMiddleware, meController.me);
 

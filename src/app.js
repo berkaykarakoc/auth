@@ -13,7 +13,7 @@ import redisClient from './config/redis.js';
 import logger from './config/logger.js';
 import correlationMiddleware from './middlewares/correlation.middleware.js';
 import requestLogger from './middlewares/request-logger.middleware.js';
-import {generalLimiter, healthCheckLimiter} from './middlewares/limiter.middleware.js';
+import {generalRateLimiter, healthCheckRateLimiter} from './middlewares/rate-limiter.middleware.js';
 
 config();
 
@@ -37,7 +37,7 @@ app.use(helmet());
 app.use(json());
 app.use(urlencoded({extended: true}));
 
-app.use(generalLimiter);
+app.use(generalRateLimiter);
 
 app.use(`/${process.env.API_VERSION}/auth`, authRoutes);
 app.use(`/${process.env.API_VERSION}/me`, meRoutes);
@@ -98,7 +98,7 @@ app.use(errorMiddleware);
  *                 error:
  *                   type: string
  */
-app.get(`/${process.env.API_VERSION}/health`, healthCheckLimiter, async (request, response) => {
+app.get(`/${process.env.API_VERSION}/health`, healthCheckRateLimiter, async (request, response) => {
 	try {
 		// Check database connection
 		await sequelize.authenticate();
@@ -132,5 +132,5 @@ app.get(`/${process.env.API_VERSION}/health`, healthCheckLimiter, async (request
 });
 
 app.listen(port, () => {
-	logger.info(`AUTH API listening on port ${port}`);
+	logger.info(`AUTH API ${process.env.API_VERSION} listening on port ${port}`);
 });

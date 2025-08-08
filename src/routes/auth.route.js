@@ -2,7 +2,7 @@ import {Router as expressRouter} from 'express';
 import authController from '../controllers/auth.controller.js';
 import refreshMiddleware from '../middlewares/refresh.middleware.js';
 import authMiddleware from '../middlewares/auth.middleware.js';
-import {authLimiter, emailVerificationLimiter, passwordResetLimiter} from '../middlewares/limiter.middleware.js';
+import {authRateLimiter, emailVerificationRateLimiter, passwordResetRateLimiter} from '../middlewares/rate-limiter.middleware.js';
 
 const router = expressRouter();
 
@@ -63,7 +63,7 @@ const router = expressRouter();
  *                   type: string
  *                   example: Too many requests from this IP, please try again later
  */
-router.post('/register', authLimiter, authController.register);
+router.post('/register', authRateLimiter, authController.register);
 
 /**
  * @swagger
@@ -114,7 +114,7 @@ router.post('/register', authLimiter, authController.register);
  *         schema:
  *           type: string
  */
-router.post('/verify-email', emailVerificationLimiter, authController.verifyEmail);
+router.post('/verify-email', emailVerificationRateLimiter, authController.verifyEmail);
 
 /**
  * @swagger
@@ -155,7 +155,7 @@ router.post('/verify-email', emailVerificationLimiter, authController.verifyEmai
  *                   type: string
  *                   example: Too many requests from this IP, please try again later
  */
-router.post('/resend-email-verification', emailVerificationLimiter, authController.resendEmailVerificationToken);
+router.post('/resend-email-verification', emailVerificationRateLimiter, authController.resendEmailVerificationToken);
 
 /**
  * @swagger
@@ -203,7 +203,7 @@ router.post('/resend-email-verification', emailVerificationLimiter, authControll
  *         schema:
  *           type: string
  */
-router.post('/login', authLimiter, authController.login);
+router.post('/login', authRateLimiter, authController.login);
 
 /**
  * @swagger
@@ -240,7 +240,7 @@ router.post('/login', authLimiter, authController.login);
  *         schema:
  *           type: string
  */
-router.post('/refresh-token', authLimiter, refreshMiddleware, authController.refreshToken);
+router.post('/refresh-token', authRateLimiter, refreshMiddleware, authController.refreshToken);
 
 /**
  * @swagger
@@ -281,7 +281,7 @@ router.post('/refresh-token', authLimiter, refreshMiddleware, authController.ref
  *                   type: string
  *                   example: Too many requests from this IP, please try again later
  */
-router.post('/forgot-password', passwordResetLimiter, authController.forgotPassword);
+router.post('/forgot-password', passwordResetRateLimiter, authController.forgotPassword);
 
 /**
  * @swagger
@@ -330,7 +330,7 @@ router.post('/forgot-password', passwordResetLimiter, authController.forgotPassw
  *                   type: string
  *                   example: Too many requests from this IP, please try again later
 */
-router.post('/reset-password', passwordResetLimiter, authController.resetPassword);
+router.post('/reset-password', passwordResetRateLimiter, authController.resetPassword);
 
 /**
  * @swagger
