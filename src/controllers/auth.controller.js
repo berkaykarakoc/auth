@@ -20,23 +20,7 @@ async function register(request, response, next) {
 		await authService.register(email, role, password);
 
 		return response.status(201).json({
-			message: 'Registration successful. Email verification link has been sent to your email address.',
-		});
-	} catch (error) {
-		next(error);
-	}
-}
-
-async function resendEmailVerificationToken(request, response, next) {
-	try {
-		const {error} = emailSchema.validate(request.body.email);
-		if (error) {
-			return response.status(400).json({message: error.message});
-		}
-
-		await authService.resendEmailVerificationToken(request.body.email);
-		return response.status(200).json({
-			message: 'Email verification link has been sent to your email address.',
+			message: 'Registration successful. Email verification link has been sent to your email address',
 		});
 	} catch (error) {
 		next(error);
@@ -60,8 +44,24 @@ async function verifyEmail(request, response, next) {
 		});
 
 		return response.status(200).json({
-			message: 'Email verified successfully.',
+			message: 'Email verified successfully',
 			accessToken,
+		});
+	} catch (error) {
+		next(error);
+	}
+}
+
+async function resendEmailVerificationToken(request, response, next) {
+	try {
+		const {error} = emailSchema.validate(request.body.email);
+		if (error) {
+			return response.status(400).json({message: error.message});
+		}
+
+		await authService.resendEmailVerificationToken(request.body.email);
+		return response.status(200).json({
+			message: 'Email verification link has been sent to your email address',
 		});
 	} catch (error) {
 		next(error);
@@ -114,7 +114,7 @@ async function forgotPassword(request, response, next) {
 
 		await authService.forgotPassword(request.body.email);
 		return response.status(200).json({
-			message: 'Password reset link has been sent to your email address.',
+			message: 'Password reset link has been sent to your email address',
 		});
 	} catch (error) {
 		next(error);
@@ -131,7 +131,7 @@ async function resetPassword(request, response, next) {
 		const {email, password, token} = request.body;
 		await authService.resetPassword(email, password, token);
 		return response.status(200).json({
-			message: 'Password reset successfully.',
+			message: 'Password reset successfully',
 		});
 	} catch (error) {
 		next(error);
@@ -142,7 +142,7 @@ async function logout(request, response, next) {
 	try {
 		await authService.logout(request.headers.authorization, request.headers.cookie);
 		return response.status(204).json({
-			message: 'You have been successfully logged out.',
+			message: 'You have been successfully logged out',
 		});
 	} catch (error) {
 		next(error);
@@ -151,8 +151,8 @@ async function logout(request, response, next) {
 
 const authController = {
 	register,
-	resendEmailVerificationToken,
 	verifyEmail,
+	resendEmailVerificationToken,
 	login,
 	refreshToken,
 	forgotPassword,

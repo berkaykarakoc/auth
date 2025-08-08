@@ -1,7 +1,7 @@
 import process from 'node:process';
 import path from 'node:path';
 import pug from 'pug';
-import transporter from '../connections/email.js';
+import transporter from '../config/email.js';
 import {TokenType} from '../models/token-type.js';
 
 const EMAIL_SUBJECTS = {

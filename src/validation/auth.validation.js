@@ -30,7 +30,7 @@ const passwordSchema = Joi.string()
 		'string.empty': 'Password is required',
 	});
 
-const repeatPasswordSchema = Joi.string()
+const confirmPasswordSchema = Joi.string()
 	.valid(Joi.ref('password'))
 	.required()
 	.messages({
@@ -56,7 +56,7 @@ export const registerSchema = Joi.object({
 	email: emailSchema,
 	role: roleSchema,
 	password: passwordSchema,
-	repeatPassword: repeatPasswordSchema,
+	confirmPassword: confirmPasswordSchema,
 });
 
 export const verifyEmailSchema = Joi.object({
@@ -72,6 +72,6 @@ export const loginSchema = Joi.object({
 export const resetPasswordSchema = Joi.object({
 	email: emailSchema,
 	password: passwordSchema,
-	repeatPassword: repeatPasswordSchema,
+	confirmPassword: confirmPasswordSchema,
 	token: passwordResetTokenSchema,
 });
