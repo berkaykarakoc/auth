@@ -39,8 +39,8 @@ app.use(urlencoded({extended: true}));
 
 app.use(generalLimiter);
 
-app.use('/auth', authRoutes);
-app.use('/me', meRoutes);
+app.use(`/${process.env.API_VERSION}/auth`, authRoutes);
+app.use(`/${process.env.API_VERSION}/me`, meRoutes);
 app.use(errorMiddleware);
 
 // Health check endpoint
@@ -72,6 +72,16 @@ app.use(errorMiddleware);
  *                     redis:
  *                       type: string
  *                       enum: [connected]
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Too many health check requests, please try again later
  *       503:
  *         description: API is unhealthy
  *         content:
@@ -88,7 +98,7 @@ app.use(errorMiddleware);
  *                 error:
  *                   type: string
  */
-app.get('/health', healthCheckLimiter, async (request, response) => {
+app.get(`/${process.env.API_VERSION}/health`, healthCheckLimiter, async (request, response) => {
 	try {
 		// Check database connection
 		await sequelize.authenticate();

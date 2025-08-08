@@ -31,6 +31,26 @@ const router = expressRouter();
  *                 email:
  *                   type: string
  *                   example: john.doe@xample.com
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Too many requests from this IP, please try again later
  */
 router.get('/', authMiddleware, meController.me);
 

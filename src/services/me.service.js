@@ -7,7 +7,7 @@ async function me(headers) {
 	const userId = decoded.sub;
 	const user = await userService.getUserById(userId);
 	if (!user) {
-		throw new ServerError(404, 'User not found');
+		throw new ServerError(401, 'Unauthorized');
 	}
 
 	return {email: user.get('email')};

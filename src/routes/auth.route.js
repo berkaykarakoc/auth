@@ -52,6 +52,16 @@ const router = expressRouter();
  *                 message:
  *                   type: string
  *                   example: Registration successful. Email verification link has been sent to your email address
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Too many requests from this IP, please try again later
  */
 router.post('/register', authLimiter, authController.register);
 
@@ -88,6 +98,16 @@ router.post('/register', authLimiter, authController.register);
  *                 message:
  *                   type: string
  *                   example: Email verified successfully
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Too many requests from this IP, please try again later
  *     headers:
  *       - name: Set-Cookie
  *         description: Cookie containing the refresh token
@@ -124,6 +144,16 @@ router.post('/verify-email', emailVerificationLimiter, authController.verifyEmai
  *                 message:
  *                   type: string
  *                   example: Email verification link has been sent to your email address
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Too many requests from this IP, please try again later
  */
 router.post('/resend-email-verification', emailVerificationLimiter, authController.resendEmailVerificationToken);
 
@@ -157,6 +187,16 @@ router.post('/resend-email-verification', emailVerificationLimiter, authControll
  *               properties:
  *                 accessToken:
  *                   type: string
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Too many requests from this IP, please try again later
  *     headers:
  *       - name: Set-Cookie
  *         description: Cookie containing the refresh token
@@ -184,6 +224,16 @@ router.post('/login', authLimiter, authController.login);
  *               properties:
  *                 accessToken:
  *                   type: string
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Too many requests from this IP, please try again later
  *     headers:
  *       - name: Set-Cookie
  *         description: Cookie containing the refresh token
@@ -220,6 +270,16 @@ router.post('/refresh-token', authLimiter, refreshMiddleware, authController.ref
  *                 message:
  *                   type: string
  *                   example: Password reset link has been sent to your email address
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Too many requests from this IP, please try again later
  */
 router.post('/forgot-password', passwordResetLimiter, authController.forgotPassword);
 
@@ -259,7 +319,17 @@ router.post('/forgot-password', passwordResetLimiter, authController.forgotPassw
  *                 message:
  *                   type: string
  *                   example: Password reset successfully
- */
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Too many requests from this IP, please try again later
+*/
 router.post('/reset-password', passwordResetLimiter, authController.resetPassword);
 
 /**
@@ -283,6 +353,16 @@ router.post('/reset-password', passwordResetLimiter, authController.resetPasswor
  *                 message:
  *                   type: string
  *                   example: You have been successfully logged out
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Too many requests from this IP, please try again later
  */
 router.post('/logout', authMiddleware, refreshMiddleware, authController.logout);
 

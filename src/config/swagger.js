@@ -26,7 +26,7 @@ const swaggerOptions = {
 		},
 		servers: [
 			{
-				url: process.env.API_URL,
+				url: `${process.env.API_URL}/${process.env.API_VERSION}`,
 			},
 		],
 	},
